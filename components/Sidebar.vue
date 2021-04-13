@@ -12,7 +12,7 @@
       >
         <b-form-checkbox-group
           v-model="selectedLabel"
-          :options="labels"
+          :options="$store.state.labels"
           :aria-describedby="ariaDescribedby"
           class="mb-3"
           stacked
@@ -50,7 +50,7 @@
           >
             <b-form-input
               id="label-input"
-              v-model="label"
+              v-model="inputLabel"
               :state="labelState"
               placeholder="ラベル名を入力"
               required
@@ -100,7 +100,7 @@
         >
       </b-form-group>
       <!--リセットエリア-->
-      <b-button type="reset" class="button ml-3">
+      <b-button type="reset" class="button ml-3" @click="handleReset">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="21"
@@ -124,15 +124,16 @@
 </template>
 
 <script>
+// import { mapState, mapMutations } from 'vuex'
 export default {
   name: 'Sidebar.vue',
   data() {
     return {
-      // ラベルの変数
-      label: '',
-      labels: [],
+      inputLabel: '',
+      labelId: 0,
       labelState: null,
       selectedLabel: [],
+      editedTaskLabel: '',
       // ステータスの変数
       selectedStatus: [],
       statusOptions: [
@@ -157,13 +158,13 @@ export default {
   methods: {
     // ラベル作成画面を初期化する
     resetModal() {
-      this.label = ''
+      this.inputLabel = ''
       this.labelState = null
     },
     // フォームの入力値をチェックして有効を返す
     checkFormValidity() {
       const valid = this.$refs.form.checkValidity()
-      this.labelState = valid
+      this.$store.state.labelState = valid
       return valid
     },
     // バリデーションチェック後にラベルを更新する
@@ -172,9 +173,13 @@ export default {
       if (!this.checkFormValidity()) {
         return
       }
-      // 作成したラベルをラベルデータに保存する
-      this.labels.push(this.label)
-      // モーダルを閉じる
+      // ラベルデータにpushする
+      // this.$store.commit('createLabel', {
+      //   text: this.inputLabel,
+      //   value: this.labelId,
+      // })
+      // this.labelId++
+      this.$store.commit('createLabel', this.inputLabel)
       this.$nextTick(() => {
         this.$bvModal.hide('modal-prevent-closing')
       })
@@ -184,6 +189,18 @@ export default {
       // バリデーションを満たす場合のみ送信する
       bvModalEvt.preventDefault()
       this.handleSubmit()
+    },
+    // リセットボタンクリックで初期化する
+    handleReset() {
+      this.selectedLabel = ''
+      this.selectedStatus = ''
+      this.selectedLimit = null
+      this.selectedLimitOut = ''
+    },
+  },
+  computed: {
+    labels() {
+      return this.$store.state.labels.list
     },
   },
 }

@@ -1,8 +1,8 @@
 <template>
   <div>
     <!--ロゴ-->
-    <b-navbar toggleable="lg" type="dark" variant="info">
-      <b-navbar-brand href="#">Todos</b-navbar-brand>
+    <b-navbar toggleable="lg" class="navbar">
+      <b-navbar-brand tag="h1" href="#">Todos</b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <!--並べ替え-->
@@ -21,7 +21,6 @@
               class="mr-sm-2 search"
               placeholder="ワード検索"
             ></b-form-input>
-            <b-button class="my-2 my-sm-0" type="submit">検索</b-button>
           </b-nav-form>
           <!--アイコン-->
           <b-nav-item-dropdown right>
@@ -49,6 +48,12 @@ export default {
 </script>
 
 <style scoped>
+.navbar {
+  background: #efefef;
+}
+#nav-collapse {
+  width: 50vw;
+}
 .icon {
   border-radius: 50%;
 }

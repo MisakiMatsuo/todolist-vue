@@ -44,14 +44,16 @@
               </b-form-select-option>
             </b-form-select>
             <!--ラベルの選択-->
-            <b-form-select v-model="editedTaskLabel" class="select-box mr-1">
-              <b-form-select-option
-                v-for="editedTaskLabelOption in editedTaskLabelOptions"
-                :key="editedTaskLabelOption.value"
-                :value="editedTaskLabelOption.value"
-              >
-                {{ editedTaskLabelOption.text }}
-              </b-form-select-option>
+            <b-form-select
+              v-model="editedTaskLabel"
+              :options="$store.state.labels"
+              class="select-box mr-1"
+            >
+              <template #first>
+                <b-form-select-option :value="null"
+                  >未分類</b-form-select-option
+                >
+              </template>
             </b-form-select>
           </div>
           <!--作成日の表示-->
@@ -67,9 +69,9 @@
           ></b-form-textarea>
           <!--期限の選択-->
           <div class="mt-3">
-            <p class="limit-name">期限：{{ context }}</p>
+            <p class="limit-name">期限：{{ editedTaskLimitDateStr }}</p>
             <b-calendar
-              v-model="context"
+              v-model="editedTaskLimitDateStr"
               locale="en-US"
               @context="onContext"
             ></b-calendar>
@@ -138,8 +140,11 @@
                   />
                 </svg>
               </b-card-title>
-              <b-card-text class="small text-muted text-right">
-                {{ task.limitDate }}</b-card-text
+              <b-card-text
+                class="small text-right"
+                :class="filterLimitOutTask(task)"
+              >
+                {{ task.limitDateStr }}</b-card-text
               >
             </b-card>
           </li>
@@ -202,8 +207,11 @@
                   />
                 </svg>
               </b-card-title>
-              <b-card-text class="small text-muted text-right">
-                {{ task.limitDate }}</b-card-text
+              <b-card-text
+                class="small text-right"
+                :class="filterLimitOutTask(task)"
+              >
+                {{ task.limitDateStr }}</b-card-text
               >
             </b-card>
           </li>
@@ -268,9 +276,9 @@
               </b-card-title>
               <b-card-text
                 class="small text-right"
-                :class="compareLimitAndToday(task)"
+                :class="filterLimitOutTask(task)"
               >
-                {{ task.limitDate }}</b-card-text
+                {{ task.limitDateStr }}</b-card-text
               >
             </b-card>
           </li>
@@ -306,17 +314,11 @@ export default {
         { text: 'Middle', value: 'middle' },
         { text: 'Low', value: 'low' },
       ],
-      editedTaskLabel: '',
-      editedTaskLabelOptions: [
-        { text: '未分類', value: '' },
-        { text: '仕事', value: 'job' },
-        { text: '家計', value: 'finance' },
-        { text: '旅行', value: 'trip' },
-      ],
-      editedTaskLimitDate: '',
-      editedTaskCreateDate: '',
+      editedTaskLimitDate: null,
+      editedTaskLimitDateStr: null,
+      editedTaskCreateDate: null,
       editedTaskDetail: '',
-      context: null,
+      editedTaskLabel: null,
       id: 0,
       // タスクがマウスオーバーされた状態の変数
       isActiveTask: '',
@@ -326,29 +328,14 @@ export default {
       search: '',
       // 現在の日付オブジェクトを入れる変数
       nowDateObject: new Date(),
-      // タスクの期限オブジェクトを入れる変数
-      limitDateObject: '',
     }
   },
   methods: {
     // 10秒後ごとに期限切れタスクの絞り込みをする
     // filterExpiredTask() {
-    //   const A = setInterval(this.compareLimitAndToday, 10000)
+    //   const A = setInterval(this.filterLimitOutTask, 10000)
     //   console.log(A)
     // },
-    // 期限切れタスクを絞り込む
-    compareLimitAndToday(task) {
-      // 今日の日付とタスク期限を比較する
-      console.dir(task)
-      if (task.limitDate === '') {
-        return []
-      }
-      if (task.limitDate.getTime() < this.nowDateObject.getTime()) {
-        return ['text-danger']
-      } else {
-        return ['text-muted']
-      }
-    },
     // Todoフォームで新規タスクを追加する
     addTodo() {
       // フォームが空の場合は表示しない
@@ -361,8 +348,9 @@ export default {
         id: this.id,
         status: 'todo',
         priority: 'middle',
-        label: '',
-        limitDate: '',
+        label: null,
+        limitDate: null,
+        limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
       }
@@ -382,8 +370,9 @@ export default {
         id: this.id,
         status: 'doing',
         priority: 'middle',
-        label: '',
-        limitDate: '',
+        label: null,
+        limitDate: null,
+        limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
       }
@@ -403,8 +392,9 @@ export default {
         id: this.id,
         status: 'done',
         priority: 'middle',
-        label: '',
-        limitDate: '',
+        label: null,
+        limitDate: null,
+        limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
       }
@@ -417,6 +407,19 @@ export default {
       // 確認画面でOK押下時のみ削除する
       if (confirm('本当に削除してもよろしいですか？')) {
         task.status = 'delete'
+      }
+    },
+    // 期限切れタスクを絞り込む
+    filterLimitOutTask(task) {
+      // 期限未設定の場合はreturn
+      if (task.limitDate === null) {
+        return []
+      }
+      // 今日の日付とタスク期限を比較する
+      if (task.limitDate.getTime() < this.nowDateObject.getTime()) {
+        return ['text-danger']
+      } else {
+        return ['text-muted']
       }
     },
     // new Date()の値をyyyy-mm-ddの文字列に変換する
@@ -443,6 +446,8 @@ export default {
       this.editedTaskName = this.selectedTask.name
       this.editedTaskStatus = this.selectedTask.status
       this.editedTaskPriority = this.selectedTask.priority
+      this.editedTaskLimitDate = this.selectedTask.limitDate
+      this.editedTaskLimitDateStr = this.selectedTask.limitDateStr
       this.editedTaskLabel = this.selectedTask.label
       this.editedTaskDetail = this.selectedTask.detail
       // 選択タスクの編集画面を表示する
@@ -450,7 +455,8 @@ export default {
     },
     // 編集画面の期限を定義する
     onContext(ctx) {
-      this.context = ctx.selectedDate
+      this.editedTaskLimitDate = ctx.selectedDate
+      this.editedTaskLimitDateStr = ctx.selectedYMD
     },
     // OKボタン押下で編集内容を更新する
     handleOk() {
@@ -468,11 +474,11 @@ export default {
         status: this.editedTaskStatus,
         priority: this.editedTaskPriority,
         label: this.editedTaskLabel,
-        limitDate: this.context,
+        limitDate: this.editedTaskLimitDate,
+        limitDateStr: this.editedTaskLimitDateStr,
         detail: this.editedTaskDetail,
       })
       console.log(this.tasks)
-      // this.filterExpiredTask()
       // 編集画面を閉じる
       this.hideEditModal()
     },
@@ -502,8 +508,8 @@ export default {
     },
     // 期限を変更した場合は新しい値を返す
     handleLimitDate() {
-      if (!(this.editedTaskLimitDate.length === 0)) {
-        return this.editedTaskLimitDate
+      if (!(this.editedTaskLimitDateStr.length === 0)) {
+        return this.editedTaskLimitDateStr
       }
     },
     // タスク詳細を変更した場合は新しい値を返す
@@ -521,14 +527,18 @@ export default {
   },
   // 検索ワードに該当するタスクを絞り込む
   computed: {
-    filteredWordTasks() {
-      return this.tasks.filter((task) => {
-        return (
-          this.search === task.name ||
-          this.search === task.detail ||
-          this.search === ''
-        )
-      })
+    filteredWordTasks(task) {
+      const hitTasks = []
+      for (const i in this.tasks) {
+        task = this.tasks[i]
+        if (
+          task.name.includes(this.search) ||
+          task.detail.includes(this.search)
+        ) {
+          hitTasks.push(task)
+        }
+      }
+      return hitTasks
     },
   },
 }
