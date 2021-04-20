@@ -1,22 +1,19 @@
 <template>
   <div class="col-2">
-    <div class="side mr-3">
-      <!--トップ-->
-      <div class="p-3 pb-4"><a href="#">トップ</a></div>
+    <div class="side pt-4">
       <!--ラベルで絞り込みエリア-->
-      <!--<template v-if="labels.length === 0"></template>-->
       <b-form-group
         v-slot="{ ariaDescribedby }"
         class="label pl-3"
         label="ラベル"
       >
         <b-form-checkbox-group
-          v-model="selectedLabel"
           :options="$store.state.labels"
           :aria-describedby="ariaDescribedby"
           class="mb-3"
           stacked
           switches
+          @change="saveLabel"
         ></b-form-checkbox-group>
         <b-button v-b-modal.modal-prevent-closing class="button mb-3">
           <svg
@@ -62,44 +59,36 @@
       <b-form-group
         v-slot="{ ariaDescribedby }"
         class="label pl-3"
-        label="優先度"
+        label="重要度"
       >
         <b-form-checkbox-group
-          v-model="selectedStatus"
-          :options="statusOptions"
+          switches
+          :options="priorityOptions"
           :aria-describedby="ariaDescribedby"
           class="mb-3"
           stacked
-          switches
+          @change="savePriority"
         ></b-form-checkbox-group>
       </b-form-group>
       <!--期限で絞り込みエリア-->
       <b-form-group
-        v-slot="{ ariaDescribedby }"
         class="label pl-3"
         label="期限"
+        v-slot="{ ariaDescribedby }"
       >
-        <b-form-select
-          v-model="selectedLimit"
-          label="期限"
-          :options="limitOptions"
-          class="limit-date-input mb-2"
-        ></b-form-select>
-        <b-form-radio
-          v-model="selectedLimitOut"
+        <b-form-radio-group
+          id="radio-group-1"
+          :options="limitOutOptions"
           :aria-describedby="ariaDescribedby"
-          value="A"
-          >期限切れを含まない</b-form-radio
-        >
-        <b-form-radio
-          v-model="selectedLimitOut"
-          :aria-describedby="ariaDescribedby"
-          value="B"
-          class="mb-3"
-          >期限切れのみ表示</b-form-radio
-        >
+          name="radio-options"
+          stacked
+          @change="saveLimitDateOut"
+        ></b-form-radio-group>
       </b-form-group>
       <!--リセットエリア-->
+      <div class="pl-3 mt-5 mb-3">
+        検索結果：{{ $store.getters.filterTask.length }}件
+      </div>
       <b-button type="reset" class="button ml-3" @click="handleReset">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -124,38 +113,30 @@
 </template>
 
 <script>
-// import { mapState, mapMutations } from 'vuex'
+import { mapState } from 'vuex'
 export default {
   name: 'Sidebar.vue',
   data() {
     return {
       inputLabel: '',
-      labelId: 0,
       labelState: null,
-      selectedLabel: [],
       editedTaskLabel: '',
-      // ステータスの変数
-      selectedStatus: [],
-      statusOptions: [
-        { text: 'High', value: 'High' },
-        { text: 'Middle', value: 'Middle' },
-        { text: 'Low', value: 'Low' },
+      // 優先度の変数
+      priorityOptions: [
+        { value: -1, text: 'High' },
+        { value: 0, text: 'Middle' },
+        { value: 1, text: 'Low' },
       ],
       // 期限の変数
-      selectedLimit: null,
-      limitOptions: [
-        { value: null, text: '指定しない' },
-        { value: '本日', text: '本日' },
-        { value: '明日', text: '明日' },
-        { value: '今週', text: '今週' },
-        { value: '来週', text: '来週' },
-        { value: '今月', text: '今月' },
+      limitOutOptions: [
+        { value: 0, text: '指定しない' },
+        { value: 1, text: '期限切れを含まない' },
+        { value: 2, text: '期限切れのみ表示' },
       ],
-      selectedLimitOut: '',
-      text: '',
     }
   },
   methods: {
+    ...mapState(['labels']),
     // ラベル作成画面を初期化する
     resetModal() {
       this.inputLabel = ''
@@ -164,7 +145,7 @@ export default {
     // フォームの入力値をチェックして有効を返す
     checkFormValidity() {
       const valid = this.$refs.form.checkValidity()
-      this.$store.state.labelState = valid
+      this.labelState = valid
       return valid
     },
     // バリデーションチェック後にラベルを更新する
@@ -174,12 +155,7 @@ export default {
         return
       }
       // ラベルデータにpushする
-      // this.$store.commit('createLabel', {
-      //   text: this.inputLabel,
-      //   value: this.labelId,
-      // })
-      // this.labelId++
-      this.$store.commit('createLabel', this.inputLabel)
+      this.$store.dispatch('createLabel', this.inputLabel)
       this.$nextTick(() => {
         this.$bvModal.hide('modal-prevent-closing')
       })
@@ -190,17 +166,21 @@ export default {
       bvModalEvt.preventDefault()
       this.handleSubmit()
     },
-    // リセットボタンクリックで初期化する
+    // リセットボタン押下で絞り込み選択をリセットする
     handleReset() {
-      this.selectedLabel = ''
-      this.selectedStatus = ''
-      this.selectedLimit = null
-      this.selectedLimitOut = ''
+      this.$store.dispatch('resetFilter')
     },
-  },
-  computed: {
-    labels() {
-      return this.$store.state.labels.list
+    // 優先度の選択状態を保存する
+    saveLabel(e) {
+      this.$store.dispatch('saveLabel', e)
+    },
+    // 優先度の選択状態を保存する
+    savePriority(e) {
+      this.$store.dispatch('savePriority', e)
+    },
+    // 期限切れの選択状態を保存する
+    saveLimitDateOut(e) {
+      this.$store.dispatch('saveLimitDateOut', e)
     },
   },
 }

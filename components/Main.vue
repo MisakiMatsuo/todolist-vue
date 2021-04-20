@@ -81,11 +81,6 @@
     </div>
     <!--Todoリストエリア-->
     <div id="todo" class="col-4 p-3">
-      <b-form-input
-        v-model="search"
-        class="mr-sm-2 search"
-        placeholder="ワード検索"
-      ></b-form-input>
       <h1 class="pb-1 ml-4">Todo</h1>
       <!--新規タスクの追加-->
       <b-form-input
@@ -96,7 +91,7 @@
       ></b-form-input>
       <!--追加タスクの描画エリア-->
       <ul class="list-group ml-4">
-        <template v-for="task in filteredWordTasks">
+        <template v-for="task in $store.getters.filterTask">
           <li
             v-if="task.status === 'todo'"
             :key="task.id"
@@ -133,7 +128,7 @@
                   class="bi bi-x"
                   :class="{ _selected: isActiveTask === task }"
                   viewBox="0 0 16 16"
-                  @click.stop="deleteTask(task)"
+                  @click.stop="$store.dispatch('deleteTask', task)"
                 >
                   <path
                     d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
@@ -163,7 +158,7 @@
       ></b-form-input>
       <!--追加タスクの描画エリア-->
       <ul class="list-group ml-4">
-        <template v-for="task in filteredWordTasks">
+        <template v-for="task in $store.getters.filterTask">
           <li
             v-if="task.status === 'doing'"
             :key="task.id"
@@ -200,7 +195,7 @@
                   class="bi bi-x"
                   :class="{ _selected: isActiveTask === task }"
                   viewBox="0 0 16 16"
-                  @click.stop="deleteTask(task)"
+                  @click.stop="$store.dispatch('deleteTask', task)"
                 >
                   <path
                     d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
@@ -230,7 +225,7 @@
       ></b-form-input>
       <!--追加タスクの描画エリア-->
       <ul class="list-group ml-4">
-        <template v-for="task in filteredWordTasks">
+        <template v-for="task in $store.getters.filterTask">
           <li
             v-if="task.status === 'done'"
             :key="task.id"
@@ -267,7 +262,7 @@
                   class="bi bi-x"
                   :class="{ _selected: isActiveTask === task }"
                   viewBox="0 0 16 16"
-                  @click.stop="deleteTask(task)"
+                  @click.stop="$store.dispatch('deleteTask', task)"
                 >
                   <path
                     d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
@@ -289,11 +284,11 @@
 </template>
 
 <script>
+// import { mapState } from 'vuex'
 export default {
   name: 'Main.vue',
   data() {
     return {
-      tasks: [],
       // タスク追加時の変数
       todoTaskName: '',
       doingTaskName: '',
@@ -304,15 +299,15 @@ export default {
       editedTaskName: '',
       editedTaskStatus: '',
       editedTaskStatusOptions: [
-        { text: 'Todo', value: 'todo' },
-        { text: 'Doing', value: 'doing' },
-        { text: 'Done', value: 'done' },
+        { value: 'todo', text: 'Todo' },
+        { value: 'doing', text: 'Doing' },
+        { value: 'done', text: 'Done' },
       ],
       editedTaskPriority: '',
       editedTaskPriorityOptions: [
-        { text: 'High', value: 'high' },
-        { text: 'Middle', value: 'middle' },
-        { text: 'Low', value: 'low' },
+        { value: -1, text: 'High' },
+        { value: 0, text: 'Middle' },
+        { value: 1, text: 'Low' },
       ],
       editedTaskLimitDate: null,
       editedTaskLimitDateStr: null,
@@ -323,7 +318,7 @@ export default {
       // タスクがマウスオーバーされた状態の変数
       isActiveTask: '',
       // 重要度High状態の変数
-      isTaskPriority: 'high',
+      isTaskPriority: -1,
       // ワード検索の変数
       search: '',
       // 現在の日付オブジェクトを入れる変数
@@ -331,11 +326,6 @@ export default {
     }
   },
   methods: {
-    // 10秒後ごとに期限切れタスクの絞り込みをする
-    // filterExpiredTask() {
-    //   const A = setInterval(this.filterLimitOutTask, 10000)
-    //   console.log(A)
-    // },
     // Todoフォームで新規タスクを追加する
     addTodo() {
       // フォームが空の場合は表示しない
@@ -343,18 +333,17 @@ export default {
         return
       }
       // タスクをデータに追加する
-      const addTask = {
+      this.$store.dispatch('addTask', {
         name: this.todoTaskName,
         id: this.id,
         status: 'todo',
-        priority: 'middle',
+        priority: 0,
         label: null,
         limitDate: null,
         limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
-      }
-      this.tasks.push(addTask)
+      })
       this.id++
       this.todoTaskName = ''
     },
@@ -365,18 +354,17 @@ export default {
         return
       }
       // タスクをデータに追加する
-      const addTask = {
+      this.$store.dispatch('addTask', {
         name: this.doingTaskName,
         id: this.id,
         status: 'doing',
-        priority: 'middle',
+        priority: 0,
         label: null,
         limitDate: null,
         limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
-      }
-      this.tasks.push(addTask)
+      })
       this.id++
       this.doingTaskName = ''
     },
@@ -387,27 +375,19 @@ export default {
         return
       }
       // タスクをデータに追加する
-      const addTask = {
+      this.$store.dispatch('addTask', {
         name: this.doneTaskName,
         id: this.id,
         status: 'done',
-        priority: 'middle',
+        priority: 0,
         label: null,
         limitDate: null,
         limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
-      }
-      this.tasks.push(addTask)
+      })
       this.id++
       this.doneTaskName = ''
-    },
-    // タスクを削除する
-    deleteTask(task) {
-      // 確認画面でOK押下時のみ削除する
-      if (confirm('本当に削除してもよろしいですか？')) {
-        task.status = 'delete'
-      }
     },
     // 期限切れタスクを絞り込む
     filterLimitOutTask(task) {
@@ -450,6 +430,7 @@ export default {
       this.editedTaskLimitDateStr = this.selectedTask.limitDateStr
       this.editedTaskLabel = this.selectedTask.label
       this.editedTaskDetail = this.selectedTask.detail
+      this.selectedTask.createDate = task.createDate
       // 選択タスクの編集画面を表示する
       this.$bvModal.show('modal-lg')
     },
@@ -468,17 +449,17 @@ export default {
       this.handleLimitDate()
       this.handleDetail()
       // 変更部分のデータを更新する
-      this.tasks.splice(this.selectedTask.id, 1, {
-        ...this.selectedTask,
+      this.$store.dispatch('editTask', {
+        id: this.selectedTask.id,
         name: this.editedTaskName,
         status: this.editedTaskStatus,
         priority: this.editedTaskPriority,
         label: this.editedTaskLabel,
         limitDate: this.editedTaskLimitDate,
         limitDateStr: this.editedTaskLimitDateStr,
+        createDate: this.selectedTask.createDate,
         detail: this.editedTaskDetail,
       })
-      console.log(this.tasks)
       // 編集画面を閉じる
       this.hideEditModal()
     },
@@ -523,22 +504,6 @@ export default {
       this.$nextTick(() => {
         this.$bvModal.hide('modal-lg')
       })
-    },
-  },
-  // 検索ワードに該当するタスクを絞り込む
-  computed: {
-    filteredWordTasks(task) {
-      const hitTasks = []
-      for (const i in this.tasks) {
-        task = this.tasks[i]
-        if (
-          task.name.includes(this.search) ||
-          task.detail.includes(this.search)
-        ) {
-          hitTasks.push(task)
-        }
-      }
-      return hitTasks
     },
   },
 }
