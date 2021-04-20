@@ -3,9 +3,9 @@
     <!--ロゴ-->
     <b-navbar class="navbar">
       <b-navbar-brand tag="h1" class="navbar-brand col-2">Todos</b-navbar-brand>
-      <b-collapse id="nav-collapse" class="col-10" is-nav>
+      <b-collapse id="nav-collapse" class="col-10 pr-4 pl-4" is-nav>
         <!--並べ替えセレクトボックス-->
-        <b-navbar-nav class="ml-auto">
+        <b-navbar-nav class="nav d-flex justify-content-between">
           <b-nav-form>
             <b-button
               id="asc-btn"
@@ -14,6 +14,7 @@
               type="button"
               @click="$store.dispatch('switchOrder')"
             >
+              <!--昇順アイコン-->
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -31,6 +32,7 @@
                   d="M12.96 14H9.028v-.691l2.579-3.72v-.054H9.098v-.867h3.785v.691l-2.567 3.72v.054h2.645V14zM4.5 2.5a.5.5 0 0 0-1 0v9.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L4.5 12.293V2.5z"
                 />
               </svg>
+              <!--降順アイコン-->
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -75,7 +77,7 @@
               @input="saveSearch"
             ></b-form-input>
             <!--ログインアイコン-->
-            <b-nav-item-dropdown right>
+            <b-nav-item-dropdown class="mr-0" right>
               <template #button-content>
                 <em>
                   <img
@@ -95,7 +97,6 @@
 </template>
 
 <script>
-// import { mapGetters } from 'vuex'
 export default {
   name: 'Navbar.vue',
   data() {
@@ -137,6 +138,9 @@ export default {
 }
 .icon {
   border-radius: 50%;
+}
+.nav {
+  flex-basis: 100%;
 }
 
 /* 検索フォーム */

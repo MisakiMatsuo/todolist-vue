@@ -8,6 +8,7 @@
         label="ラベル"
       >
         <b-form-checkbox-group
+          v-model="selectedLabel"
           :options="$store.state.labels"
           :aria-describedby="ariaDescribedby"
           class="mb-3"
@@ -62,6 +63,7 @@
         label="重要度"
       >
         <b-form-checkbox-group
+          v-model="selectedPriority"
           switches
           :options="priorityOptions"
           :aria-describedby="ariaDescribedby"
@@ -72,12 +74,13 @@
       </b-form-group>
       <!--期限で絞り込みエリア-->
       <b-form-group
+        v-slot="{ ariaDescribedby }"
         class="label pl-3"
         label="期限"
-        v-slot="{ ariaDescribedby }"
       >
         <b-form-radio-group
           id="radio-group-1"
+          v-model="selectedLimitDateOut"
           :options="limitOutOptions"
           :aria-describedby="ariaDescribedby"
           name="radio-options"
@@ -113,21 +116,25 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 export default {
   name: 'Sidebar.vue',
   data() {
     return {
+      // ラベル作成画面の変数
       inputLabel: '',
       labelState: null,
       editedTaskLabel: '',
+      // 選択ラベルの変数
+      selectedLabel: [],
       // 優先度の変数
+      selectedPriority: [],
       priorityOptions: [
         { value: -1, text: 'High' },
         { value: 0, text: 'Middle' },
         { value: 1, text: 'Low' },
       ],
       // 期限の変数
+      selectedLimitDateOut: 0,
       limitOutOptions: [
         { value: 0, text: '指定しない' },
         { value: 1, text: '期限切れを含まない' },
@@ -136,7 +143,6 @@ export default {
     }
   },
   methods: {
-    ...mapState(['labels']),
     // ラベル作成画面を初期化する
     resetModal() {
       this.inputLabel = ''
@@ -168,6 +174,9 @@ export default {
     },
     // リセットボタン押下で絞り込み選択をリセットする
     handleReset() {
+      this.selectedLabel = []
+      this.selectedPriority = []
+      this.selectedLimitDateOut = 0
       this.$store.dispatch('resetFilter')
     },
     // 優先度の選択状態を保存する
@@ -200,8 +209,5 @@ export default {
   background: #efefef;
   border: none;
   padding: 0;
-}
-.limit-date-input {
-  width: 14vw;
 }
 </style>

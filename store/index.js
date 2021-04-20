@@ -14,7 +14,7 @@ export const state = () => ({
   // 期間の選択状態
   selectedLimitDate: null,
   // 期限切れの絞り込み選択
-  selectedLimitDateOut: '',
+  selectedLimitDateOut: 0,
   // 現在時刻
   now: new Date(),
   // 並べ替えの選択
@@ -218,6 +218,7 @@ export const getters = {
       const _hitTasks = _.intersectionBy(...hitTasks, 'id')
       if (state.isDiscHidden) {
         return _.sortBy(_hitTasks, ['priority'])
+        // 降順
       } else {
         return _.sortBy(_hitTasks, ['priority']).reverse()
       }
@@ -226,6 +227,7 @@ export const getters = {
       const _hitTasks = _.intersectionBy(...hitTasks, 'id')
       if (state.isDiscHidden) {
         return _.sortBy(_hitTasks, ['limitDate'])
+        // 降順
       } else {
         return _.sortBy(_hitTasks, ['limitDate']).reverse()
       }
@@ -234,6 +236,7 @@ export const getters = {
       const _hitTasks = _.intersectionBy(...hitTasks, 'id')
       if (state.isDiscHidden) {
         return _.sortBy(_hitTasks, ['name'])
+        // 降順
       } else {
         return _.sortBy(_hitTasks, ['name']).reverse()
       }

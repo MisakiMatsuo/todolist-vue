@@ -284,7 +284,6 @@
 </template>
 
 <script>
-// import { mapState } from 'vuex'
 export default {
   name: 'Main.vue',
   data() {
@@ -397,7 +396,9 @@ export default {
       }
       // 今日の日付とタスク期限を比較する
       if (task.limitDate.getTime() < this.nowDateObject.getTime()) {
+        // 期限切れの時
         return ['text-danger']
+        // そうでない時
       } else {
         return ['text-muted']
       }
@@ -555,7 +556,7 @@ input:focus::placeholder {
 .list-group {
   padding: 0;
   overflow: scroll;
-  height: 70vh;
+  height: 80vh;
 }
 .list-group-item {
   border: none;
