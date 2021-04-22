@@ -80,20 +80,20 @@
       </b-modal>
     </div>
     <!--Todoリストエリア-->
-    <div id="todo" class="col-4 p-3">
-      <h1 class="pb-1 ml-4">Todo</h1>
+    <div id="todo" class="col-4 mt-4 mb-2 ml-5 pr-5">
+      <h1 class="pb-1">Todo</h1>
       <!--新規タスクの追加-->
       <b-form-input
         v-model="todoTaskName"
         placeholder="タスクを追加"
-        class="input-task mb-2 ml-4"
+        class="input-task mb-2"
         @keyup.enter.prevent="addTodo"
       ></b-form-input>
       <!--追加タスクの描画エリア-->
-      <ul class="list-group ml-4">
+      <ul class="list-group">
         <template v-for="task in $store.getters.filterTask">
           <li
-            v-if="task.status === 'todo'"
+            v-if="!task.status && !task.delete"
             :key="task.id"
             class="list-group-item"
             @click="edit(task)"
@@ -147,20 +147,20 @@
       </ul>
     </div>
     <!--Doingリストエリア-->
-    <div id="doing" class="col-4 p-3">
-      <h1 class="pb-1 ml-4">Doing</h1>
+    <div id="doing" class="col-4 mt-4 mb-2 pr-5">
+      <h1 class="pb-1">Doing</h1>
       <!--新規タスクの追加-->
       <b-form-input
         v-model="doingTaskName"
         placeholder="タスクを追加"
-        class="input-task mb-2 ml-4"
+        class="input-task mb-2"
         @keyup.enter.prevent="addDoing"
       ></b-form-input>
       <!--追加タスクの描画エリア-->
-      <ul class="list-group ml-4">
+      <ul class="list-group">
         <template v-for="task in $store.getters.filterTask">
           <li
-            v-if="task.status === 'doing'"
+            v-if="task.status === 1 && !task.delete"
             :key="task.id"
             class="list-group-item"
             @click="edit(task)"
@@ -214,20 +214,20 @@
       </ul>
     </div>
     <!--Doneリストエリア-->
-    <div id="done" class="col-4 p-3">
-      <h1 class="pb-1 ml-4">Done</h1>
+    <div id="done" class="col-4 mt-4 mb-2 pr-5">
+      <h1 class="pb-1">Done</h1>
       <!--新規タスクの追加-->
       <b-form-input
         v-model="doneTaskName"
         placeholder="タスクを追加"
-        class="input-task mb-2 ml-4"
+        class="input-task mb-2"
         @keyup.enter.prevent="addDone"
       ></b-form-input>
       <!--追加タスクの描画エリア-->
-      <ul class="list-group ml-4">
+      <ul class="list-group">
         <template v-for="task in $store.getters.filterTask">
           <li
-            v-if="task.status === 'done'"
+            v-if="task.status === 2 && !task.delete"
             :key="task.id"
             class="list-group-item"
             @click="edit(task)"
@@ -298,9 +298,9 @@ export default {
       editedTaskName: '',
       editedTaskStatus: '',
       editedTaskStatusOptions: [
-        { value: 'todo', text: 'Todo' },
-        { value: 'doing', text: 'Doing' },
-        { value: 'done', text: 'Done' },
+        { value: 0, text: 'Todo' },
+        { value: 1, text: 'Doing' },
+        { value: 2, text: 'Done' },
       ],
       editedTaskPriority: '',
       editedTaskPriorityOptions: [
@@ -328,20 +328,21 @@ export default {
     // Todoフォームで新規タスクを追加する
     addTodo() {
       // フォームが空の場合は表示しない
-      if (this.todoTaskName.length === 0) {
+      if (!this.todoTaskName.length) {
         return
       }
       // タスクをデータに追加する
       this.$store.dispatch('addTask', {
         name: this.todoTaskName,
         id: this.id,
-        status: 'todo',
+        status: 0,
         priority: 0,
         label: null,
         limitDate: null,
         limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
+        delete: false,
       })
       this.id++
       this.todoTaskName = ''
@@ -349,20 +350,21 @@ export default {
     // Doingフォームで新規タスクを追加する
     addDoing() {
       // フォームが空の場合は表示しない
-      if (this.doingTaskName.length === 0) {
+      if (!this.doingTaskName.length) {
         return
       }
       // タスクをデータに追加する
       this.$store.dispatch('addTask', {
         name: this.doingTaskName,
         id: this.id,
-        status: 'doing',
+        status: 1,
         priority: 0,
         label: null,
         limitDate: null,
         limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
+        delete: false,
       })
       this.id++
       this.doingTaskName = ''
@@ -370,20 +372,21 @@ export default {
     // Doneフォームで新規タスクを追加する
     addDone() {
       // フォームが空の場合は表示しない
-      if (this.doneTaskName.length === 0) {
+      if (!this.doneTaskName.length) {
         return
       }
       // タスクをデータに追加する
       this.$store.dispatch('addTask', {
         name: this.doneTaskName,
         id: this.id,
-        status: 'done',
+        status: 2,
         priority: 0,
         label: null,
         limitDate: null,
         limitDateStr: '',
         createDate: this.createDateStr(),
         detail: '',
+        delete: false,
       })
       this.id++
       this.doneTaskName = ''
@@ -542,7 +545,6 @@ h1 {
 
 /* タスク追加フォームのレイアウト */
 .input-task {
-  width: 93%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 input::placeholder {

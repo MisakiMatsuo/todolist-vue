@@ -10,7 +10,7 @@
             <b-button
               id="asc-btn"
               variant="outline-secondary"
-              class="mr-1"
+              class="mr-1 ml-3"
               type="button"
               @click="$store.dispatch('switchOrder')"
             >
@@ -58,15 +58,10 @@
               id="sort"
               v-model="selected"
               label="sort"
-              class="sort mr-4"
+              class="sort"
               :options="sortOptions"
               @change="saveSort"
             >
-              <template #first>
-                <b-form-select-option :value="null" disabled
-                  >並べ替え</b-form-select-option
-                >
-              </template>
             </b-form-select>
           </b-nav-form>
           <b-nav-form>
@@ -87,6 +82,9 @@
                   />
                 </em>
               </template>
+              <b-dropdown-item disabled
+                ><strong>hoge@cloud-ace.jp</strong></b-dropdown-item
+              >
               <b-dropdown-item>ログアウト</b-dropdown-item>
             </b-nav-item-dropdown>
           </b-nav-form>
@@ -101,9 +99,9 @@ export default {
   name: 'Navbar.vue',
   data() {
     return {
-      selected: 'null',
+      selected: 0,
       sortOptions: [
-        { value: 0, text: '指定しない' },
+        { value: 0, text: '作成日順' },
         { value: 1, text: '重要度の高い順' },
         { value: 2, text: '期限が近い順' },
         { value: 3, text: 'タスク名順' },

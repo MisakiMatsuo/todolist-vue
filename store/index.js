@@ -88,6 +88,7 @@ export const mutations = {
       limitDateStr: '',
       createDate: task.createDate,
       detail: '',
+      delete: false,
     })
   },
   // 編集タスクをタスクデータに保存する
@@ -102,6 +103,7 @@ export const mutations = {
       limitDateStr: task.limitDateStr,
       createDate: task.createDate,
       detail: task.detail,
+      delete: false,
     })
   },
   // 検索内容をデータに保存する
@@ -138,7 +140,7 @@ export const mutations = {
   DELETE_TASK(state, task) {
     // 確認画面でOK押下時のみ削除
     if (confirm('本当に削除してもよろしいですか？')) {
-      task.status = 'delete'
+      task.delete = true
     }
   },
   // 絞り込み選択をリセットする
@@ -241,8 +243,11 @@ export const getters = {
         return _.sortBy(_hitTasks, ['name']).reverse()
       }
       // 並べ替え指定なしの場合は絞り込んだタスク配列の積集合を返す
-    } else {
+    } else if (state.isDiscHidden) {
       return _.intersectionBy(...hitTasks, 'id')
+      // 降順
+    } else {
+      return _.intersectionBy(...hitTasks, 'id').reverse()
     }
   },
 }
