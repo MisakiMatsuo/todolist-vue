@@ -1,8 +1,10 @@
 <template>
   <div>
     <!--ロゴ-->
-    <b-navbar class="navbar">
-      <b-navbar-brand tag="h1" class="navbar-brand col-2">Todos</b-navbar-brand>
+    <b-navbar class="navbar p-0">
+      <b-navbar-brand tag="h1" class="navbar-brand col-2 p-3 m-0"
+        >Todos</b-navbar-brand
+      >
       <b-collapse id="nav-collapse" class="col-10 pr-4 pl-4" is-nav>
         <!--並べ替えセレクトボックス-->
         <b-navbar-nav class="nav d-flex justify-content-between">
@@ -67,7 +69,7 @@
           <b-nav-form>
             <!--検索窓-->
             <b-form-input
-              class="mr-2 search"
+              class="search mr-2"
               placeholder="検索"
               @input="saveSearch"
             ></b-form-input>
@@ -99,6 +101,7 @@ export default {
   name: 'Navbar.vue',
   data() {
     return {
+      // 並べ替えの変数
       selected: 0,
       sortOptions: [
         { value: 0, text: '作成日順' },
@@ -106,7 +109,6 @@ export default {
         { value: 2, text: '期限が近い順' },
         { value: 3, text: 'タスク名順' },
       ],
-      isHidden: false,
     }
   },
   methods: {
@@ -114,6 +116,7 @@ export default {
     saveSearch(e) {
       this.$store.dispatch('saveSearch', e)
     },
+    // 並べ替えの選択状態を保存する
     saveSort(e) {
       this.$store.dispatch('saveSort', e)
     },
@@ -124,16 +127,19 @@ export default {
 <style scoped>
 .navbar {
   background: #efefef;
-  padding: 0;
 }
+
+/* Todosロゴ */
 .navbar-brand {
-  padding: 0.8rem;
-  margin: 0;
   background: #fff;
 }
+
+/* 並べ替え */
 #sort {
   border: none;
 }
+
+/* ログインユーザーアイコン */
 .icon {
   border-radius: 50%;
 }

@@ -13,7 +13,6 @@ app.use(bodyParser.json())
 app.get('/', async function (req, res) {
   const document = firestore.doc('tasks/3')
   const doc = await document.get()
-  console.log(doc._fieldsProto)
   res.send(doc._fieldsProto)
 })
 
@@ -25,7 +24,6 @@ app.put('/:1', async function (req, res) {
     id: req.body.id,
     priority: req.body.priority,
   })
-  console.log(req.body)
   res.send('なーたん')
 })
 
@@ -38,7 +36,6 @@ app.post('/', async function (req, res) {
     id: req.body.id,
     priority: req.body.priority,
   })
-  console.log(req.body)
   res.send('舞香たん')
 })
 
